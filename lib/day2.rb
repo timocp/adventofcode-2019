@@ -21,4 +21,18 @@ class Day2 < Base
     run
     vm[0]
   end
+
+  def part2
+    initial_state = input.chomp.split(/,/).map(&:to_i)
+    0.upto(99).each do |noun|
+      0.upto(99).each do |verb|
+        self.vm = initial_state.dup
+        vm[1] = noun
+        vm[2] = verb
+        run
+        return noun * 100 + verb if vm[0] == 19690720
+      end
+    end
+    raise "Solution not found"
+  end
 end

@@ -1,5 +1,3 @@
-require "set"
-
 class Day3 < Base
   Point = Struct.new(:x, :y) do
     def step(dir)
@@ -14,24 +12,27 @@ class Day3 < Base
     def manhattan_distance
       x.abs + y.abs
     end
-
-    def origin?
-      x == 0 && y == 0
-    end
   end
 
   # represents the path of a wire through the grid
   class Wire
     def initialize(path)
       @pos = Point.new(0, 0)
-      @seen = Set[@pos]
+      @steps = 0
+      @seen = {}
       parse(path)
     end
 
     attr_reader :seen
 
     def closest_intersection(other)
-      intersections(other).reject(&:origin?).map(&:manhattan_distance).min
+      intersections(other).map(&:manhattan_distance).min
+    end
+
+    def fewest_steps_to_intersection(other)
+      seen.each_pair.map do |point, steps|
+        steps + other.seen[point] if other.seen.key?(point)
+      end.compact.min
     end
 
     private
@@ -40,18 +41,38 @@ class Day3 < Base
       input.split(",").each do |move|
         move.slice(1..).to_i.times do
           @pos = @pos.step(move.slice(0))
-          @seen.add(@pos)
+          @steps += 1
+          @seen[@pos] = @steps unless @seen.key?(@pos)
         end
       end
     end
 
     def intersections(other)
-      (seen & other.seen).to_a
+      (seen.keys & other.seen.keys).to_a
     end
   end
 
   def part1
-    paths = input.split("\n")
-    Wire.new(paths[0]).closest_intersection(Wire.new(paths[1]))
+    wire1.closest_intersection(wire2)
+  end
+
+  def part2
+    wire1.fewest_steps_to_intersection(wire2)
+  end
+
+  private
+
+  def wire1
+    read_wires
+    @wire1
+  end
+
+  def wire2
+    read_wires
+    @wire2
+  end
+
+  def read_wires
+    @wire1, @wire2 = input.split("\n").map { |path| Wire.new(path) } if @wire1.nil?
   end
 end

@@ -21,3 +21,22 @@ echo Fetching $url...
 mkdir -p input
 w3m $url > input/day$day.txt
 file input/day$day.txt
+
+lib="lib/day$day.rb"
+tst="test/day${day}_test.rb"
+echo "Creating $lib..."
+cat > $lib <<EOF
+class Day$day < Base
+  def part1
+    binding.pry
+  end
+end
+EOF
+
+echo "Creating $tst..."
+cat > $tst <<EOF
+require "day$day"
+
+class Day${day}Test < Minitest::Test
+end
+EOF

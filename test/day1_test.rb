@@ -1,3 +1,5 @@
+require "day1"
+
 class Day1Test < Minitest::Test
   def test_fuel_required
     d1 = Day1.new

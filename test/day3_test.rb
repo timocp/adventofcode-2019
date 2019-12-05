@@ -1,3 +1,5 @@
+require "day3"
+
 class Day3Test < Minitest::Test
   WIRE = [
     Day3::Wire.new("R8,U5,L5,D3"),

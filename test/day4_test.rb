@@ -1,3 +1,5 @@
+require "day4"
+
 class Day4Test < Minitest::Test
   def test_valid
     d = Day4.new

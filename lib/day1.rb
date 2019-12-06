@@ -13,10 +13,14 @@ class Day1 < Base
   end
 
   def part1
-    input.each_line.map { |line| fuel_required(mass: line.chomp.to_i) }.inject(:+)
+    input.map { |mass| fuel_required(mass: mass) }.inject(:+)
   end
 
   def part2
-    input.each_line.map { |line| total_fuel_required(mass: line.chomp.to_i) }.inject(:+)
+    input.map { |mass| total_fuel_required(mass: mass) }.inject(:+)
+  end
+
+  def input
+    @input ||= raw_input.each_line.map(&:chomp).map(&:to_i).freeze
   end
 end

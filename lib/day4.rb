@@ -18,15 +18,15 @@ class Day4 < Base
   end
 
   def part1
-    input_to_range.count { |password| valid?(password) }
+    input_range.count { |password| valid?(password) }
   end
 
   def part2
-    input_to_range.count { |password| valid?(password, strict: true) }
+    input_range.count { |password| valid?(password, strict: true) }
   end
 
-  def input_to_range
-    start, finish = input.chomp.split("-")
+  def input_range
+    start, finish = raw_input.chomp.split("-")
     (start..finish)
   end
 end

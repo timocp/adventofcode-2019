@@ -73,6 +73,6 @@ class Day3 < Base
   end
 
   def read_wires
-    @wire1, @wire2 = input.split("\n").map { |path| Wire.new(path) } if @wire1.nil?
+    @wire1, @wire2 = raw_input.split("\n").map { |path| Wire.new(path) } if @wire1.nil?
   end
 end

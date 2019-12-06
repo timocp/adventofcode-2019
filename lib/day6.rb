@@ -8,8 +8,19 @@ class Day6 < Base
 
   def count_orbits
     @orbits.keys.map do |thing|
-      count_depth(thing)
+      path_to_com(thing).size
     end.inject(:+)
+  end
+
+  def transfer_orbits(from:, to:)
+    path1 = path_to_com(from)
+    path2 = path_to_com(to)
+    path1.each_with_index do |thing, i1|
+      if (i2 = path2.index(thing))
+        return i1 + i2
+      end
+    end
+    nil
   end
 
   def part1
@@ -17,13 +28,17 @@ class Day6 < Base
     count_orbits
   end
 
+  def part2
+    transfer_orbits(from: :YOU, to: :SAN)
+  end
+
   private
 
-  def count_depth(thing)
-    n = 0
+  def path_to_com(thing)
+    path = []
     while (thing = @orbits[thing])
-      n += 1
+      path << thing
     end
-    n
+    path
   end
 end

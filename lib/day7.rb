@@ -1,19 +1,36 @@
 require "intcode"
 
 class Day7 < Base
-  def part1
-    max = 0
-    (0..4).to_a.permutation(5).each do |a, b, c, d, e|
-      out1 = Intcode.new(program.dup, input: [a, 0]).run.last
-      out2 = Intcode.new(program.dup, input: [b, out1]).run.last
-      out3 = Intcode.new(program.dup, input: [c, out2]).run.last
-      out4 = Intcode.new(program.dup, input: [d, out3]).run.last
-      out5 = Intcode.new(program.dup, input: [e, out4]).run.last
-      if out5 > max
-        max = out5
+  def max_amp(program)
+    (0..4).to_a.permutation(5).map do |pa, pb, pc, pd, pe|
+      amps = 5.times.map { Intcode.new(program.dup) }
+      out0 = amps[0].run(input: [pa, 0]).last
+      out1 = amps[1].run(input: [pb, out0]).last
+      out2 = amps[2].run(input: [pc, out1]).last
+      out3 = amps[3].run(input: [pd, out2]).last
+      amps[4].run(input: [pe, out3]).last
+    end.max
+  end
+
+  def max_feedback_amp(program)
+    (5..9).to_a.permutation(5).map do |phase_setting|
+      amps = 5.times.map { |n| Intcode.new(program.dup, input: [phase_setting[n]]) }
+      pipe = [0]
+      until amps[4].terminated
+        amps.each do |amp|
+          pipe = amp.run(input: pipe)
+        end
       end
-    end
-    max
+      pipe.last
+    end.max
+  end
+
+  def part1
+    max_amp(program)
+  end
+
+  def part2
+    max_feedback_amp(program)
   end
 
   def program

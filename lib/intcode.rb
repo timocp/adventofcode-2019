@@ -5,17 +5,24 @@ class Intcode
     @input = input
     @output = []
     @debug = debug
+    @terminated = false
   end
 
-  attr_reader :mem, :pos
+  attr_reader :mem, :pos, :terminated
 
-  def run
+  def run(input: nil)
+    raise "VM is already terminated" if @terminated
+
+    @input += input if input
+    @output = []
     while step
     end
     @output
   end
 
   def step
+    return false if opcode == 3 && @input.none? # "pause" vm
+
     case opcode
     when 1 then add
     when 2 then multiply
@@ -26,6 +33,7 @@ class Intcode
     when 7 then less_than
     when 8 then equals
     when 99
+      @terminated = true
       return false
     else
       raise "Invalid opcode: #{opcode} at #{pos}"
@@ -48,7 +56,7 @@ class Intcode
 
   def input
     debug("INP", 2)
-    mem[mem[pos + 1]] = @input.shift
+    mem[mem[pos + 1]] = @input.shift || raise("No input at #{pos}")
     @pos += 2
   end
 
@@ -99,9 +107,9 @@ class Intcode
 
   def read(param)
     if mode(param) == 1
-      mem[pos + param]
+      mem[pos + param] || raise("Invalid read at #{pos} (#{pos + param})")
     else
-      mem[mem[pos + param]]
+      mem[mem[pos + param]] || raise("Invalid read at #{pos} (#{mem[pos + param]})")
     end
   end
 

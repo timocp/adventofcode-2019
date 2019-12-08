@@ -9,16 +9,10 @@ class Day8 < Base
 
     attr_reader :sif, :width, :height, :lsize
 
-    def layer(n)
-      sif[n * lsize, lsize].each_slice(width).to_a
-    end
-
     def each_layer
       return to_enum(__method__) unless block_given?
 
-      sif.each_slice(lsize) do |layer|
-        yield layer.each_slice(width).to_a
-      end
+      sif.each_slice(lsize) { |layer| yield layer }
     end
 
     def pixel(x, y)
@@ -43,11 +37,8 @@ class Day8 < Base
   end
 
   def part1
-    counts = input_pic.each_layer.map do |layer|
-      layer.flatten.group_by(&:itself).map { |k, v| [k, v.size] }.to_h
-    end
-    layer = counts.min_by { |stats| stats[0] }
-    layer[1] * layer[2]
+    layer = input_pic.each_layer.min_by { |l| l.count(0) }
+    layer.count(1) * layer.count(2)
   end
 
   def part2
@@ -55,6 +46,6 @@ class Day8 < Base
   end
 
   def input_pic
-    Pic.new(raw_input, width: 25, height: 6)
+    @input_pic ||= Pic.new(raw_input, width: 25, height: 6)
   end
 end

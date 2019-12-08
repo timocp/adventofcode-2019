@@ -20,14 +20,41 @@ class Day8 < Base
         yield layer.each_slice(width).to_a
       end
     end
+
+    def pixel(x, y)
+      0.upto(sif.size / lsize) do |z|
+        v = sif[z * lsize + x + y * width]
+        return " " if v == 0
+        return "#" if v == 1
+      end
+      raise "no colour at (#{x}, #{y})"
+    end
+
+    def to_s
+      s = ""
+      0.upto(height - 1) do |y|
+        0.upto(width - 1) do |x|
+          s << pixel(x, y)
+        end
+        s += "\n"
+      end
+      s
+    end
   end
 
   def part1
-    pic = Pic.new(raw_input, width: 25, height: 6)
-    counts = pic.each_layer.map do |layer|
+    counts = input_pic.each_layer.map do |layer|
       layer.flatten.group_by(&:itself).map { |k, v| [k, v.size] }.to_h
     end
     layer = counts.min_by { |stats| stats[0] }
     layer[1] * layer[2]
+  end
+
+  def part2
+    input_pic.to_s
+  end
+
+  def input_pic
+    Pic.new(raw_input, width: 25, height: 6)
   end
 end

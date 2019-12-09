@@ -1,4 +1,6 @@
 class Intcode
+  class IntcodeError < StandardError; end
+
   def initialize(mem, input: [], debug: false)
     @mem = mem
     @pos = 0
@@ -6,12 +8,13 @@ class Intcode
     @output = []
     @debug = debug
     @terminated = false
+    @relative_base = 0
   end
 
   attr_reader :mem, :pos, :terminated
 
   def run(input: nil)
-    raise "VM is already terminated" if @terminated
+    raise_error("VM is already terminated") if @terminated
 
     @input += input if input
     @output = []
@@ -32,31 +35,32 @@ class Intcode
     when 6 then jump_if_false
     when 7 then less_than
     when 8 then equals
+    when 9 then adjust_relative_base
     when 99
       @terminated = true
       return false
     else
-      raise "Invalid opcode: #{opcode} at #{pos}"
+      raise_error("Invalid opcode: #{opcode}")
     end
-    puts mem.inspect if @debug
+    puts if @debug
     true
   end
 
   def add
     debug("ADD", 4)
-    mem[mem[pos + 3]] = read(1) + read(2)
+    write(3, read(1) + read(2))
     @pos += 4
   end
 
   def multiply
     debug("MUL", 4)
-    mem[mem[pos + 3]] = read(1) * read(2)
+    write(3, read(1) * read(2))
     @pos += 4
   end
 
   def input
     debug("INP", 2)
-    mem[mem[pos + 1]] = @input.shift || raise("No input at #{pos}")
+    write(1, @input.shift)
     @pos += 2
   end
 
@@ -86,44 +90,52 @@ class Intcode
 
   def less_than
     debug("LT", 4)
-    mem[mem[pos + 3]] = read(1) < read(2) ? 1 : 0
+    write(3, read(1) < read(2) ? 1 : 0)
     @pos += 4
   end
 
   def equals
     debug("EQ", 4)
-    mem[mem[pos + 3]] = read(1) == read(2) ? 1 : 0
+    write(3, read(1) == read(2) ? 1 : 0)
     @pos += 4
+  end
+
+  def adjust_relative_base
+    debug("ARB", 2)
+    @relative_base += read(1)
+    @pos += 2
   end
 
   def opcode
     current % 100
   end
 
-  # 1 -> immediate, 0 -> position
+  # 2 -> relative, 1 -> immediate, 0 -> position
   def mode(param)
     current.digits.reverse[-param - 2] || 0
   end
 
   def read(param)
-    if mode(param) == 1
-      mem[pos + param] || raise("Invalid read at #{pos} (#{pos + param})")
-    else
-      mem[mem[pos + param]] || raise("Invalid read at #{pos} (#{mem[pos + param]})")
-    end
+    puts "READ p=#{param} m=#{mode(param)} a=#{address(param)} -> #{mem.fetch(address(param), 0)}" \
+      if @debug
+    raise_error("Invalid read #{address(param)}") if address(param) < 0
+    mem.fetch(address(param), 0)
+  end
+
+  # write value to address given by param, which can be positional or
+  # relative
+  def write(param, value)
+    puts "WRITE p=#{param} m=#{mode(param)} a=#{address(param)} v=#{value}" if @debug
+    raise_error("Invalid write #{address(param)}") if address(param) < 0
+    mem[address(param)] = value
   end
 
   def debug(op, num)
     return unless @debug
 
-    print "[#{pos}]\t#{op}\t#{mem[pos]}\t"
+    print "[pos=#{pos} rb=#{relative_base}]\t#{op}\t#{mem[pos]}\t"
     2.upto(num) do |param|
-      print "#{mem[pos + param - 1]} "
-      if mode(param) == 1
-        print "i"
-      else
-        print "p(#{mem[mem[pos + param - 1]]})"
-      end
+      print mem[pos + param - 1]
       print "\t"
     end
     puts
@@ -131,7 +143,24 @@ class Intcode
 
   private
 
+  attr_reader :relative_base
+
   def current
     mem[pos]
+  end
+
+  # returns the real address that a param refers to given the mode
+  def address(param)
+    case mode(param)
+    when 0 then mem[pos + param]                 # positional
+    when 1 then pos + param                      # immediate
+    when 2 then relative_base + mem[pos + param] # relative
+    else
+      raise_error("Invalid address: param=#{param}, mode=#{param(mode)}")
+    end
+  end
+
+  def raise_error(message)
+    raise IntcodeError, "at #{pos} (#{mem[pos]}): #{message}", caller
   end
 end

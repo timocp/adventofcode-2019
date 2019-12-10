@@ -18,6 +18,7 @@ end
 
 (ARGV.any? ? ARGV : Aoc.days).each do |day|
   day = Aoc.handler(day)
-  report("Day #{day.number} part 1: ") { day.part1 }
-  report("Day #{day.number} part 2: ") { day.part2 } if day.respond_to?(:part2)
+  num = day.number.to_s.rjust(2)
+  report("Day #{num} part 1: ") { day.part1 }
+  report("Day #{num} part 2: ") { day.part2 } if day.respond_to?(:part2)
 end

@@ -13,6 +13,7 @@ class Aoc
     Dir.entries("input")
        .reject { |f| f.start_with?(".") }
        .map { |f| f.match(/(\d+)/)[1] }
+       .map(&:to_i)
        .sort
   end
 end

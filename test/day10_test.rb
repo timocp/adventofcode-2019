@@ -11,6 +11,16 @@ class Day10Test < Minitest::Test
     assert_equal [11, 13, 210], Day10::Map.new(example5).best_location
   end
 
+  def test_vaporise
+    list = Day10::Map.new(example6).vaporise
+    assert_equal [8, 1], list[0]
+    list = Day10::Map.new(example5).vaporise
+    assert_equal [11, 12], list[0]
+    assert_equal [12, 1], list[1]
+    assert_equal [8, 2], list[199]
+    assert_equal [11, 1], list[298]
+  end
+
   def example1
     <<~MAP
       .#..#
@@ -88,6 +98,16 @@ class Day10Test < Minitest::Test
       .#.#.###########.###
       #.#.#.#####.####.###
       ###.##.####.##.#..##
+    MAP
+  end
+
+  def example6
+    <<~MAP
+      .#....#####...#..
+      ##...##.#####..##
+      ##...#...#.#####.
+      ..#.....#...###..
+      ..#.#.....#....##
     MAP
   end
 end

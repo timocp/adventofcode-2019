@@ -12,12 +12,13 @@ class Day11 < Base
 
     def initialize
       @pos = Point.new(0, 0)
-      @facing = :up
+      @facing = :left     # should be up but i have some kind of axis off
       @hull = Hash.new(0) # key by Point -> 0 = black, 1 = white
     end
 
-    def execute(program)
+    def execute(program, start_white: false)
       vm = Intcode.new(program)
+      @hull[@pos] = 1 if start_white
       until vm.terminated
         commands = vm.run(input: [@hull[@pos]])
         commands.each_cons(2) do |cmd_colour, cmd_dir|
@@ -36,15 +37,15 @@ class Day11 < Base
     end
 
     def hull_to_s
-      minx, maxx = @hull.keys.map(&:x).minmax
-      miny, maxy = @hull.keys.map(&:y).minmax
+      minx, maxx = ([@pos.x] + @hull.keys.map(&:x)).minmax
+      miny, maxy = ([@pos.y] + @hull.keys.map(&:y)).minmax
       s = ""
       miny.upto(maxy) do |y|
         minx.upto(maxx) do |x|
           s << if @pos.x == x && @pos.y == y
                  SHIP[@facing]
                else
-                 @hull[Point.new(x, y)].to_s
+                 @hull[Point.new(x, y)] == 1 ? "#" : " "
                end
         end
         s += "\n"
@@ -71,6 +72,12 @@ class Day11 < Base
     robot = Robot.new
     robot.execute(input)
     robot.panels_painted
+  end
+
+  def part2
+    robot = Robot.new
+    robot.execute(input, start_white: true)
+    robot.hull_to_s
   end
 
   private

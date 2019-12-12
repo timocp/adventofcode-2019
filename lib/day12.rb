@@ -21,6 +21,18 @@ class Day12 < Base
     def kinetic_energy
       dx.abs + dy.abs + dz.abs
     end
+
+    def statex
+      [x, dx]
+    end
+
+    def statey
+      [y, dy]
+    end
+
+    def statez
+      [z, dz]
+    end
   end
 
   class System
@@ -72,11 +84,28 @@ class Day12 < Base
     def inspect
       (["After #{@steps} steps:"] + @moons.map(&:inspect)).join("\n")
     end
+
+    def count_to_repeat
+      start = [@moons.map(&:statex), @moons.map(&:statey), @moons.map(&:statez)]
+      repeat = [nil, nil, nil]
+
+      until repeat.all?
+        step
+        repeat[0] = @steps if !repeat[0] && @moons.map(&:statex) == start[0]
+        repeat[1] = @steps if !repeat[1] && @moons.map(&:statey) == start[1]
+        repeat[2] = @steps if !repeat[2] && @moons.map(&:statez) == start[2]
+      end
+      repeat.inject(1, :lcm)
+    end
   end
 
   def part1
     system = System.parse(raw_input)
     system.step(1000)
     system.total_energy
+  end
+
+  def part2
+    System.parse(raw_input).count_to_repeat
   end
 end

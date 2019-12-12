@@ -21,7 +21,7 @@ class Day11 < Base
       @hull[@pos] = 1 if start_white
       until vm.terminated
         commands = vm.run(input: [@hull[@pos]])
-        commands.each_cons(2) do |cmd_colour, cmd_dir|
+        commands.each_slice(2) do |cmd_colour, cmd_dir|
           @hull[@pos] = cmd_colour
           case cmd_dir
           when 0 then turn_left

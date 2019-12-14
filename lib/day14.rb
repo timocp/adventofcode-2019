@@ -17,37 +17,44 @@ class Day14 < Base
 
   class Nanofactory
     def initialize(input)
-      @inv = Hash.new(0)
-      @ore_used = 0
       @recipes = {}
       input.each_line.map { |line| Recipe.new(line.chomp) }.each { |r| @recipes[r.output] = r }
     end
 
-    attr_reader :ore_used
+    # returns the number of ORE used to build num x component
+    def build(comp, num, inv = Hash.new(0))
+      recipe = @recipes[comp]
+      ore_used = 0
 
-    def build(comp)
-      if comp == :ORE
-        @ore_used += 1
-        @inv[comp] += 1
-      else
-        build_recipe(@recipes[comp])
-      end
-    end
-
-    def build_recipe(recipe)
-      recipe.input.each do |comp, count|
-        if comp == :ORE
-          @ore_used += count
+      repeats = (num.to_r / recipe.output_count).ceil
+      recipe.input.each do |recipe_mat, recipe_mat_count|
+        mat_needed = recipe_mat_count * repeats
+        if recipe_mat == :ORE
+          ore_used += mat_needed
+        elsif inv[recipe_mat] >= mat_needed
+          inv[recipe_mat] -= mat_needed
         else
-          build(comp) while @inv[comp] < count
-          @inv[comp] -= count
+          ore_used += build(recipe_mat, mat_needed - inv[recipe_mat], inv)
+          inv[recipe_mat] -= mat_needed
         end
       end
-      @inv[recipe.output] += recipe.output_count
+      inv[comp] += repeats * recipe.output_count
+      ore_used
+    end
+
+    def max_fuel(units)
+      f1 = build(:FUEL, 1)
+      (1..units).bsearch do |i|
+        build(:FUEL, i) + f1 >= units
+      end
     end
   end
 
   def part1
-    Nanofactory.new(raw_input).tap { |f| f.build(:FUEL) }.ore_used
+    Nanofactory.new(raw_input).build(:FUEL, 1)
+  end
+
+  def part2
+    Nanofactory.new(raw_input).max_fuel(1000000000000)
   end
 end

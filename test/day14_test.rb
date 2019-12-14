@@ -11,7 +11,17 @@ class Day14Test < Minitest::Test
       [example4, 180697],
       [example5, 2210736]
     ].each do |example, expected|
-      assert_equal Day14::Nanofactory.new(example).tap { |f| f.build(:FUEL) }.ore_used, expected
+      assert_equal Day14::Nanofactory.new(example).build(:FUEL, 1), expected
+    end
+  end
+
+  def test_max_fuel
+    [
+      [example3, 82892753],
+      [example4, 5586022],
+      [example5, 460664]
+    ].each do |example, expected|
+      assert_equal Day14::Nanofactory.new(example).max_fuel(1000000000000), expected
     end
   end
 

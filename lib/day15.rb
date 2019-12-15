@@ -46,6 +46,11 @@ class Day15 < Base
       @map[pos] = value
     end
 
+    # returns Pos where the oxygen is
+    def oxygen_pos
+      @map.key(OXYGEN)
+    end
+
     def inspect(droid)
       s = ""
       Range.new(*@map.keys.map(&:y).minmax).each do |y|
@@ -146,12 +151,25 @@ class Day15 < Base
         @map.at(state) == Map::OXYGEN
       end
     end
+
+    # length of longest path from origin of the oxygen is the number of mins
+    # it will take to fill up
+    def fill_with_oxygen
+      BFS.max_depth(Finder.new(@map.oxygen_pos, @map))
+    end
   end
 
   def part1
-    e = Explorer.new(vm: Intcode.new(program))
-    e.explore
-    e.shortest_path_to_oxygen.size
+    explorer.explore
+    explorer.shortest_path_to_oxygen.size
+  end
+
+  def part2
+    explorer.fill_with_oxygen
+  end
+
+  def explorer
+    @explorer ||= Explorer.new(vm: Intcode.new(program))
   end
 
   def program

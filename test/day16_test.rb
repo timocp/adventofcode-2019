@@ -26,4 +26,15 @@ class Day16Test < Minitest::Test
       assert_equal expected, signal.join[0, 8]
     end
   end
+
+  def test_decode_real_signal
+    d = Day16.new
+    [
+      %w[03036732577212944063491565474664 84462026],
+      %w[02935109699940807407585447034323 78725270],
+      %w[03081770884921959731165446850517 53553731]
+    ].each do |input, expected|
+      assert_equal expected, d.decode_real_signal(input)
+    end
+  end
 end
